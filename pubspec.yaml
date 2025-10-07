@@ -1,0 +1,28 @@
+name: check_in
+description: A check-in app using google_map and provider.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=2.18.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  latlong2: ^0.9.0
+  provider: ^6.0.5
+  geolocator: ^11.0.2
+  intl: ^0.18.0
+  google_maps_flutter: ^2.13.1
+  fluttertoast: ^9.0.0
+  firebase_core: ^4.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/

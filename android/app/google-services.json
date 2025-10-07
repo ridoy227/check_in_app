@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "929686186243",
+    "project_id": "check-in-f24f0",
+    "storage_bucket": "check-in-f24f0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:929686186243:android:493e4746adca10e7526136",
+        "android_client_info": {
+          "package_name": "com.example.check_in"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkTCzd_5Btv4w-hSguMyZgmldOLOLOfRQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

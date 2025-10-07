@@ -1,0 +1,38 @@
+import 'package:check_in/core/constants/app_colors.dart';
+import 'package:check_in/core/constants/text_styles.dart';
+import 'package:check_in/presentation/providers/home_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+class InformationCardWidget extends StatelessWidget {
+  const InformationCardWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final homeProvider = Provider.of<HomeProvider>(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Total Check-Ins: ${homeProvider.totalCheckIns}',
+            style: TextFontStyle.smallMedium.copyWith(color: AppColors.black),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Check-In Status: ${homeProvider.getCheckInStatus}',
+            style: TextFontStyle.smallMedium.copyWith(color: AppColors.black),
+          ),
+        ],
+      ),
+    );
+  }
+}
