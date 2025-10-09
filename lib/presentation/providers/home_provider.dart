@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:check_in/core/services/firebase_service.dart';
 import 'package:check_in/core/services/firestore_service.dart';
 import 'package:check_in/core/utils/toast_util.dart';
 import 'package:flutter/material.dart';
@@ -239,6 +240,10 @@ class HomeProvider extends ChangeNotifier {
       log("User is not within the check-in radius.");
     }
     notifyListeners();
+  }
+
+  bool checkIfAdmin(){
+   return FirebaseService().firebaseAuth.currentUser?.email == "admin@gmail.com";
   }
 
   

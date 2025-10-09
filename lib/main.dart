@@ -1,7 +1,10 @@
+import 'package:check_in/core/services/firebase_service.dart';
 import 'package:check_in/firebase_options.dart';
 import 'package:check_in/presentation/providers/home_provider.dart';
 import 'package:check_in/presentation/screens/create_checkin_screen.dart';
 import 'package:check_in/presentation/screens/home_screen.dart';
+import 'package:check_in/presentation/screens/sign_in_screen.dart';
+import 'package:check_in/presentation/screens/sign_up_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,9 +33,12 @@ class CheckInApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: const HomeScreen(),
+        home: FirebaseService().firebaseAuth.currentUser != null? const HomeScreen() : SignUpScreen(),
         routes: {
           '/create-checkin': (context) => const CreateCheckinScreen(),
+          '/home': (context) => const HomeScreen(),
+          '/singIn': (context) =>  SignInScreen(),
+          '/signUp': (context) =>  SignUpScreen(),
         },
       ),
     );

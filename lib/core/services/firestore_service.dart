@@ -17,4 +17,5 @@ class FirestoreService {
     final snapshot = await firestore.collection('checkin_points').get();
     return snapshot.docs.map((doc) => doc.data()).toList();
   }
+
 }

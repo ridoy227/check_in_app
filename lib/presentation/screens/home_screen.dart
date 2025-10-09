@@ -1,6 +1,7 @@
 import 'package:check_in/core/constants/app_colors.dart';
 import 'package:check_in/core/constants/app_texts.dart';
 import 'package:check_in/core/constants/text_styles.dart';
+import 'package:check_in/core/services/firebase_service.dart';
 import 'package:check_in/presentation/providers/home_provider.dart';
 import 'package:check_in/presentation/widgets/custom_create_button.dart';
 import 'package:check_in/presentation/widgets/information_card_widget.dart';
@@ -22,36 +23,31 @@ class _HomeScreenState extends State<HomeScreen> {
     Provider.of<HomeProvider>(context, listen: false).fetchCheckInPoints();
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: const CustomDrawerWidget(),
       appBar: AppBar(
-        centerTitle: true,
         title: const Text(appName),
-        leading: IconButton(onPressed: () {}, icon: const Icon(Icons.menu)),
+        centerTitle: !context.read<HomeProvider>().checkIfAdmin(),
+        leading: IconButton(onPressed: () {
+          _scaffoldKey.currentState?.openDrawer();
+        }, icon: const Icon(Icons.menu)),
         actions: [
-          IconButton(
-              onPressed: () {
+          if (context.read<HomeProvider>().checkIfAdmin())
+            CustomIconButton(
+              width: 120,
+              onTap: () {
                 Navigator.pushNamed(context, '/create-checkin');
               },
-              icon: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(8)),
-                child: const Row(
-                  children: [
-                    Icon(
-                      Icons.edit,
-                      color: AppColors.white,
-                    ),
-                    SizedBox(
-                      width: 4,
-                    ),
-                    Text("Create Point", style: TextFontStyle.smallMedium)
-                  ],
-                ),
-              )),
+              text: "Create Point",
+            ),
+          const SizedBox(
+            width: 4,
+          )
         ],
       ),
       body: Stack(
@@ -70,34 +66,70 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Consumer<HomeProvider>(builder: (context, provider, child) {
-          return provider.showCheckinButton? CustomIconButton(
-            icon: const Icon(Icons.check, color: AppColors.white,),
-            text: provider.showCheckinButton? "Check In" : "Check Out",
-            onTap: () {
-              
-            },
-          ): Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: AppColors.errorRed.withAlpha((1 * 255).round())
-            ),
-            child:  const Text(
-              "You are not in the check-in radius",
-              style: TextFontStyle.smallMedium,
-            ),
-          );
-          
-          // CustomIconButton(
-          //   width: 250,
-          //   icon: const Icon(Icons.location_searching, color: AppColors.white,),
-          //   text: "Focus on my Current Location",
-          //   onTap: () {
-              
-          //   },
-          // );
-        }
+      floatingActionButton:
+          Consumer<HomeProvider>(builder: (context, provider, child) {
+        return provider.showCheckinButton
+            ? CustomIconButton(
+                icon: const Icon(
+                  Icons.check,
+                  color: AppColors.white,
+                ),
+                text: provider.showCheckinButton ? "Check In" : "Check Out",
+                onTap: () {},
+              )
+            : Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.errorRed.withAlpha((1 * 255).round())),
+                child: const Text(
+                  "You are not in the check-in radius",
+                  style: TextFontStyle.smallMedium,
+                ),
+              );
+      }),
+    );
+  }
+}
+
+class CustomDrawerWidget extends StatelessWidget {
+  const CustomDrawerWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        width: 320,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(16)
+          )
+        ),
+        child: Column(
+          children: [
+
+            CustomIconButton(
+              onTap: () {
+                FirebaseService().logout().then((value){
+                  if(value){
+                     if(context.mounted){
+                       Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/singIn',
+                        (Route<dynamic> route) => false,
+                      );
+                     }
+                  }
+                });                
+              },
+              icon: Icon(Icons.logout_rounded, color: AppColors.white,),
+              text: "Logout"
+              )
+          ],
+        ),
       ),
     );
   }
