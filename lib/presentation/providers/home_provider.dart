@@ -213,6 +213,8 @@ class HomeProvider extends ChangeNotifier {
     }
   }
 
+
+  // checking if user is within the check-in radius
   Future<void> checkLocationStatus() async {
 
 
@@ -229,14 +231,11 @@ class HomeProvider extends ChangeNotifier {
       markers.first.position.longitude,
     );
 
-    log("Distance ===== $distance  ");
-    log("Location Distance ===== $locationRadius  ");
-
     if (distance <= locationRadius) {
-      _checkInStatus = 'Checked In';
+      showCheckinButton = true;
       log("User is within the check-in radius.");
     } else {
-      _checkInStatus = 'Not Checked In';
+      showCheckinButton = false;
       log("User is not within the check-in radius.");
     }
     notifyListeners();
