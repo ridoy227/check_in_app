@@ -15,6 +15,8 @@ class HomeProvider extends ChangeNotifier {
   Set<Circle> circles = {};
   LatLng? selectedLocation;
   double locationRadius = 0.0;
+  bool showHomeRadius = false;
+  bool showCheckinButton = false;
 
 
   final firestoreService = FirestoreService();
@@ -57,6 +59,7 @@ class HomeProvider extends ChangeNotifier {
         ).listen((Position position) {
           currentLocation = LatLng(position.latitude, position.longitude);
           focusOnCurrentLocation(currentLocation!);
+          checkLocationStatus();
         });
       }
     } catch (e) {
@@ -148,10 +151,95 @@ class HomeProvider extends ChangeNotifier {
         'timestamp': DateTime.now().toIso8601String(),
       });
       ToastUtil.showSuccessToast('Check-In Point Created Successfully');
+      fetchCheckInPoints();
     } catch (e) {
       ToastUtil.showErrorToast('Failed to create Check-In Point');
       log("Firestore Error: $e");
     }
+  }
+
+
+  Future<void> fetchCheckInPoints() async {
+    try {
+      final points = await firestoreService.fetchCheckInPoints();
+      if (points.isNotEmpty) {
+        _totalCheckIns = points.length;
+        log("Items ========= $points");
+        // Clear existing markers and circles
+        markers.clear();
+        circles.clear();
+
+        for (var point in points) {
+          final lat = point['latitude'] as double;
+          final lng = point['longitude'] as double;
+          final radius = point['radius'] as double;
+          locationRadius = point['radius'] as double;
+
+          final location = LatLng(lat, lng);
+
+          // Add marker
+          markers.add(Marker(
+            markerId: MarkerId('checkin_${markers.length + 1}'),
+            position: location,
+            infoWindow: InfoWindow(
+              title: 'Check-In Point ${markers.length + 1}',
+              snippet:
+                  'Lat: ${lat.toStringAsFixed(4)}, Lng: ${lng.toStringAsFixed(4)}',
+            ),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          ));
+
+          // Add circle
+          circles.add(
+            Circle(
+              circleId: CircleId('circle_${circles.length + 1}'),
+              center: location,
+              radius: radius,
+              fillColor: Colors.blue.withAlpha((0.2 * 255).round()),
+              strokeColor: Colors.blueAccent,
+              strokeWidth: 2,
+            ),
+          );
+        }
+        log("Markers: $markers");
+        log("Circles: $circles");
+        showHomeRadius = true;
+        checkLocationStatus();
+        notifyListeners();
+      }
+    } catch (e) {
+      ToastUtil.showErrorToast('Failed to fetch Check-In Points');
+      log("Firestore Fetch Error: $e");
+    }
+  }
+
+  Future<void> checkLocationStatus() async {
+
+
+    if (currentLocation == null || markers.isEmpty) {
+      _checkInStatus = 'Not Checked In';
+      notifyListeners();
+      return;
+    }
+
+    final distance = Geolocator.distanceBetween(
+      currentLocation!.latitude,
+      currentLocation!.longitude,
+      markers.first.position.latitude,
+      markers.first.position.longitude,
+    );
+
+    log("Distance ===== $distance  ");
+    log("Location Distance ===== $locationRadius  ");
+
+    if (distance <= locationRadius) {
+      _checkInStatus = 'Checked In';
+      log("User is within the check-in radius.");
+    } else {
+      _checkInStatus = 'Not Checked In';
+      log("User is not within the check-in radius.");
+    }
+    notifyListeners();
   }
 
   
