@@ -1,5 +1,6 @@
 import 'package:check_in/core/constants/app_colors.dart';
 import 'package:check_in/core/constants/text_styles.dart';
+import 'package:check_in/core/services/firestore_service.dart';
 import 'package:check_in/presentation/providers/home_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,13 +23,18 @@ class InformationCardWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Total Check-Ins: ${homeProvider.totalCheckIns}',
-            style: TextFontStyle.smallMedium.copyWith(color: AppColors.black),
-          ),
+          StreamBuilder(
+              stream: FirestoreService().activeUsersStream(),
+              builder: (context, asyncSnapshot) {
+                return Text(
+                  'Total Check-Ins: ${asyncSnapshot.data?.length}',
+                  style: TextFontStyle.smallMedium
+                      .copyWith(color: AppColors.black),
+                );
+              }),
           const SizedBox(height: 8),
           Text(
-            'Check-In Status: ${homeProvider.getCheckInStatus}',
+            'Check-In Status: ${homeProvider.isMeCheckIn ? "Active" : "Inactive"}',
             style: TextFontStyle.smallMedium.copyWith(color: AppColors.black),
           ),
         ],

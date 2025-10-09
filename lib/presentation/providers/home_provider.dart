@@ -18,12 +18,13 @@ class HomeProvider extends ChangeNotifier {
   double locationRadius = 0.0;
   bool showHomeRadius = false;
   bool showCheckinButton = false;
-
+  bool _isMeCheckedIn = false;
 
   final firestoreService = FirestoreService();
 
   int get totalCheckIns => _totalCheckIns;
   String get getCheckInStatus => _checkInStatus;
+  bool get isMeCheckIn => _isMeCheckedIn;
 
   void setController(GoogleMapController controller) {
     mapController = controller;
@@ -70,6 +71,8 @@ class HomeProvider extends ChangeNotifier {
   }
 
   void focusOnCurrentLocation(LatLng location) async {
+    _isMeCheckedIn = await firestoreService.isUserCheckedIn();
+    notifyListeners();
     // return if controller is not set
     if (mapController == null) return;
 
@@ -82,9 +85,6 @@ class HomeProvider extends ChangeNotifier {
   }
 
   void addCheckInPoint(LatLng location) {
-    // increment total check ins
-    _totalCheckIns += 1;
-    _checkInStatus = 'Checked In';
     selectedLocation = location;
 
     if (markers.isNotEmpty || circles.isNotEmpty) {
@@ -138,7 +138,6 @@ class HomeProvider extends ChangeNotifier {
     }
   }
 
-
   Future<void> createCheckIn() async {
     if (selectedLocation == null) {
       ToastUtil.showErrorToast('Please select a location first');
@@ -159,13 +158,11 @@ class HomeProvider extends ChangeNotifier {
     }
   }
 
-
   Future<void> fetchCheckInPoints() async {
     try {
       final points = await firestoreService.fetchCheckInPoints();
+
       if (points.isNotEmpty) {
-        _totalCheckIns = points.length;
-        log("Items ========= $points");
         // Clear existing markers and circles
         markers.clear();
         circles.clear();
@@ -187,7 +184,8 @@ class HomeProvider extends ChangeNotifier {
               snippet:
                   'Lat: ${lat.toStringAsFixed(4)}, Lng: ${lng.toStringAsFixed(4)}',
             ),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+            icon:
+                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
           ));
 
           // Add circle
@@ -214,11 +212,8 @@ class HomeProvider extends ChangeNotifier {
     }
   }
 
-
   // checking if user is within the check-in radius
   Future<void> checkLocationStatus() async {
-
-
     if (currentLocation == null || markers.isEmpty) {
       _checkInStatus = 'Not Checked In';
       notifyListeners();
@@ -237,14 +232,34 @@ class HomeProvider extends ChangeNotifier {
       log("User is within the check-in radius.");
     } else {
       showCheckinButton = false;
+      checInOut();
       log("User is not within the check-in radius.");
     }
     notifyListeners();
   }
 
-  bool checkIfAdmin(){
-   return FirebaseService().firebaseAuth.currentUser?.email == "admin@gmail.com";
+  bool checkIfAdmin() {
+    return FirebaseService().firebaseAuth.currentUser?.email ==
+        "admin@gmail.com";
   }
 
-  
+  Future<bool> checInOut() async {
+    try {
+      await FirestoreService().checkInOut(
+          lat: currentLocation?.latitude ?? 0,
+          lng: currentLocation?.longitude ?? 0,
+          isCheckIn: showCheckinButton);
+            _isMeCheckedIn = await firestoreService.isUserCheckedIn();
+    notifyListeners();
+      if (showCheckinButton) {
+        ToastUtil.showSuccessToast("Check in Sucess");
+      } else {
+        ToastUtil.showSuccessToast("Check Out Sucess");
+      }
+      return true;
+    } catch (error) {
+      ToastUtil.showErrorToast("Something went wrong");
+      return false;
+    }
+  }
 }

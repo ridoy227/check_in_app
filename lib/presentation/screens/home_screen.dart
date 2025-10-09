@@ -33,9 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text(appName),
         centerTitle: !context.read<HomeProvider>().checkIfAdmin(),
-        leading: IconButton(onPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        }, icon: const Icon(Icons.menu)),
+        leading: IconButton(
+            onPressed: () {
+              _scaffoldKey.currentState?.openDrawer();
+            },
+            icon: const Icon(Icons.menu)),
         actions: [
           if (context.read<HomeProvider>().checkIfAdmin())
             CustomIconButton(
@@ -75,7 +77,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: AppColors.white,
                 ),
                 text: provider.showCheckinButton ? "Check In" : "Check Out",
-                onTap: () {},
+                onTap: () {
+                  provider.checInOut();
+                },
               )
             : Container(
                 padding: const EdgeInsets.all(10),
@@ -103,31 +107,33 @@ class CustomDrawerWidget extends StatelessWidget {
       child: Container(
         width: 320,
         decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(16)
-          )
-        ),
+            color: Colors.white,
+            borderRadius: BorderRadius.only(topRight: Radius.circular(16))),
         child: Column(
           children: [
-
+            Spacer(),
             CustomIconButton(
-              onTap: () {
-                FirebaseService().logout().then((value){
-                  if(value){
-                     if(context.mounted){
-                       Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/singIn',
-                        (Route<dynamic> route) => false,
-                      );
-                     }
-                  }
-                });                
-              },
-              icon: Icon(Icons.logout_rounded, color: AppColors.white,),
-              text: "Logout"
-              )
+                onTap: () {
+                  FirebaseService().logout().then((value) {
+                    if (value) {
+                      if (context.mounted) {
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/singIn',
+                          (Route<dynamic> route) => false,
+                        );
+                      }
+                    }
+                  });
+                },
+                icon: const Icon(
+                  Icons.logout_rounded,
+                  color: AppColors.white,
+                ),
+                text: "Logout"),
+            const SizedBox(
+              height: 30,
+            )
           ],
         ),
       ),
