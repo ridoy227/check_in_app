@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:check_in/core/services/firestore_service.dart';
 import 'package:check_in/core/utils/toast_util.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -14,6 +15,9 @@ class HomeProvider extends ChangeNotifier {
   Set<Circle> circles = {};
   LatLng? selectedLocation;
   double locationRadius = 0.0;
+
+
+  final firestoreService = FirestoreService();
 
   int get totalCheckIns => _totalCheckIns;
   String get getCheckInStatus => _checkInStatus;
@@ -127,6 +131,26 @@ class HomeProvider extends ChangeNotifier {
         ),
       );
       notifyListeners();
+    }
+  }
+
+
+  Future<void> createCheckIn() async {
+    if (selectedLocation == null) {
+      ToastUtil.showErrorToast('Please select a location first');
+      return;
+    }
+    try {
+      await firestoreService.createCheckInPoint({
+        'latitude': selectedLocation!.latitude,
+        'longitude': selectedLocation!.longitude,
+        'radius': locationRadius,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+      ToastUtil.showSuccessToast('Check-In Point Created Successfully');
+    } catch (e) {
+      ToastUtil.showErrorToast('Failed to create Check-In Point');
+      log("Firestore Error: $e");
     }
   }
 

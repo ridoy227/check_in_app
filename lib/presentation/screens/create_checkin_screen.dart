@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:check_in/core/constants/app_colors.dart';
 import 'package:check_in/core/constants/text_styles.dart';
 import 'package:check_in/presentation/providers/home_provider.dart';
@@ -20,7 +22,8 @@ class CreateCheckinScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-              onPressed: () {
+              onPressed: ()async {
+                await context.read<HomeProvider>().createCheckIn();
                 Navigator.pop(context);
               },
               child: Text(

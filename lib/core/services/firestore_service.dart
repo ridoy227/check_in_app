@@ -1,12 +1,20 @@
-/// Firestore service placeholder.
-/// You mentioned you'll add Firebase later — this file contains
-/// commented stubs and shape of methods to implement once Firebase is added.
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirestoreService {
-  FirestoreService();
+  FirestoreService._internal();
+  static final FirestoreService _instance = FirestoreService._internal();
+  factory FirestoreService() => _instance;
 
-  // Example methods to implement later:
-  // Future<void> createCheckInPoint(Map<String, dynamic> data) async { ... }
-  // Stream<DocumentSnapshot<Map<String, dynamic>>> getActiveCheckInStream() { ... }
-  // Future<void> updateCheckInUsers(List<String> users) async { ... }
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  // create check-in point
+  Future<void> createCheckInPoint(Map<String, dynamic> data) async {
+    await firestore.collection('checkin_points').add(data);
+  }
+
+  // fetch all check-in points
+  Future<List<Map<String, dynamic>>> fetchCheckInPoints() async {
+    final snapshot = await firestore.collection('checkin_points').get();
+    return snapshot.docs.map((doc) => doc.data()).toList();
+  }
 }
