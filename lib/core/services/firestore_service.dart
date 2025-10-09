@@ -27,28 +27,26 @@ class FirestoreService {
     return snapshot.docs.map((doc) => doc.data()).toList();
   }
 
-
   // // fetch all check-in persons
   // Future<List<Map<String, dynamic>>> fetchCheckInActivePersons() async {
   //   final snapshot = await firestore.collection('checkin_users').where('status', isEqualTo: "active").get();
   //   return snapshot.docs.map((doc) => doc.data()).toList();
   // }
 
-Stream<List<Map<String, dynamic>>> activeUsersStream() {
-  final collection = firestore.collection('checkin_users');
+  Stream<List<Map<String, dynamic>>> activeUsersStream() {
+    final collection = firestore.collection('checkin_users');
 
-  // Listen for all users with active status
-  return collection
-      .where('status', isEqualTo: 'active')
-      .snapshots()
-      .map((snapshot) {
-        return snapshot.docs.map((doc) {
-          final data = doc.data();
-          return data;
-        }).toList();
-      });
-}
-
+    // Listen for all users with active status
+    return collection
+        .where('status', isEqualTo: 'active')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return data;
+      }).toList();
+    });
+  }
 
   Future<void> checkInOut({
     required double lat,
@@ -83,22 +81,26 @@ Stream<List<Map<String, dynamic>>> activeUsersStream() {
     }
   }
 
-  Future<bool> isUserCheckedIn() async {
-  final uid = FirebaseService().firebaseAuth.currentUser?.uid;
-  if (uid == null) return false;
+  Stream<bool> userCheckInStatusStream() {
+    final uid = FirebaseService().firebaseAuth.currentUser?.uid;
+    if (uid == null) {
+      // return a stream that always emits false when user is not logged in
+      return Stream.value(false);
+    }
 
-  final collection = firestore.collection('checkin_users');
-  final querySnapshot = await collection.where('uid', isEqualTo: uid).limit(1).get();
+    final collection = firestore.collection('checkin_users');
 
-  if (querySnapshot.docs.isNotEmpty) {
-    final data = querySnapshot.docs.first.data();
-    return data['status'] == 'active';
+    // Listen for realtime changes to the user’s check-in document
+    return collection
+        .where('uid', isEqualTo: uid)
+        .limit(1)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        final data = snapshot.docs.first.data();
+        return data['status'] == 'active';
+      }
+      return false;
+    });
   }
-
-  return false;
-}
-
-
-
-
 }

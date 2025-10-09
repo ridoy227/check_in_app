@@ -10,7 +10,6 @@ class HomeProvider extends ChangeNotifier {
   final LatLng initialLocation = const LatLng(23.788422, 90.425025);
   GoogleMapController? mapController;
   LatLng? currentLocation;
-  int _totalCheckIns = 0;
   String _checkInStatus = 'Not Checked In';
   Set<Marker> markers = {};
   Set<Circle> circles = {};
@@ -18,13 +17,8 @@ class HomeProvider extends ChangeNotifier {
   double locationRadius = 0.0;
   bool showHomeRadius = false;
   bool showCheckinButton = false;
-  bool _isMeCheckedIn = false;
-
   final firestoreService = FirestoreService();
-
-  int get totalCheckIns => _totalCheckIns;
   String get getCheckInStatus => _checkInStatus;
-  bool get isMeCheckIn => _isMeCheckedIn;
 
   void setController(GoogleMapController controller) {
     mapController = controller;
@@ -71,7 +65,6 @@ class HomeProvider extends ChangeNotifier {
   }
 
   void focusOnCurrentLocation(LatLng location) async {
-    _isMeCheckedIn = await firestoreService.isUserCheckedIn();
     notifyListeners();
     // return if controller is not set
     if (mapController == null) return;
@@ -94,10 +87,10 @@ class HomeProvider extends ChangeNotifier {
 
     // add marker to the map
     markers.add(Marker(
-      markerId: MarkerId('checkin_$_totalCheckIns'),
+      markerId: MarkerId('checkin_0'),
       position: location,
       infoWindow: InfoWindow(
-        title: 'Check-In Point $_totalCheckIns',
+        title: 'Check-In Point 0',
         snippet:
             'Lat: ${location.latitude.toStringAsFixed(4)}, Lng: ${location.longitude.toStringAsFixed(4)}',
       ),
@@ -249,7 +242,6 @@ class HomeProvider extends ChangeNotifier {
           lat: currentLocation?.latitude ?? 0,
           lng: currentLocation?.longitude ?? 0,
           isCheckIn: showCheckinButton);
-            _isMeCheckedIn = await firestoreService.isUserCheckedIn();
     notifyListeners();
       if (showCheckinButton) {
         ToastUtil.showSuccessToast("Check in Sucess");

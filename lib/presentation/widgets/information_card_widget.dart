@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:check_in/core/constants/app_colors.dart';
 import 'package:check_in/core/constants/text_styles.dart';
 import 'package:check_in/core/services/firestore_service.dart';
@@ -33,9 +35,18 @@ class InformationCardWidget extends StatelessWidget {
                 );
               }),
           const SizedBox(height: 8),
-          Text(
-            'Check-In Status: ${homeProvider.isMeCheckIn ? "Active" : "Inactive"}',
-            style: TextFontStyle.smallMedium.copyWith(color: AppColors.black),
+          StreamBuilder(
+            stream: FirestoreService().userCheckInStatusStream(),
+            builder: (context, asyncSnapshot) {
+              log("checking ==== ${asyncSnapshot.data}");
+              if(asyncSnapshot.data == null){
+                return const SizedBox.shrink();
+              }
+              return Text(
+                'Check-In Status: ${asyncSnapshot.data! ? "Active" : "Inactive"}',
+                style: TextFontStyle.smallMedium.copyWith(color: AppColors.black),
+              );
+            }
           ),
         ],
       ),
